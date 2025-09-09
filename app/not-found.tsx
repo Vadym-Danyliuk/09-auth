@@ -1,13 +1,9 @@
+import { Metadata } from 'next';
 import css from './Home.module.css';
-export const metadata = {
-  title: 'Сторінку не знайдено — Note-Hub',
-  description: 'На жаль, такої сторінки не існує.',
-  openGraph: {
-    title: '404 — Note-Hub',
-    description: 'Сторінка не знайдена',
-    url: 'https://notehub.vercel.app/not-found',
-    images: ['https://ac.goit.global/fullstack/react/notehub-og-meta.jpg'],
-  },
+
+export const metadata: Metadata = {
+  title: 'Page not found',
+  description: 'This page is not found',
 };
 
 const notFound = () => {

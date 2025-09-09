@@ -1,40 +1,46 @@
-
-import axios from 'axios';
 import { cookies } from 'next/headers';
-import type { User } from '@/types/user';
+import { nextServer } from './api';
+import { Note } from '@/types/note';
+import { User } from '@/types/user';
 
-const baseURL = 'https://notehub-api.goit.study';
+interface FetchedNotesResponse {
+  notes: Note[];
+  totalPages: number;
+}
 
-const createServerClient = async () => {
+export const checkServerSession = async () => {
   const cookieStore = await cookies();
-  const cookieHeader = cookieStore.toString();
-
-  return axios.create({
-    baseURL,
-    headers: {
-      'Content-Type': 'application/json',
-      'Cookie': cookieHeader, 
-    },
+  const response = await nextServer.get('/auth/session', {
+    headers: { Cookie: cookieStore.toString() },
   });
+  return response;
 };
 
-export const getServerUser = async (): Promise<User | null> => {
-  try {
-    const client = await createServerClient();
-    const response = await client.get('/users/me');
-    return response.data;
-  } catch (error) {
-    return null;
-  }
+export const fetchNotes = async (
+  page: number,
+  search: string,
+  tag: string
+): Promise<FetchedNotesResponse> => {
+  const cookieStore = await cookies();
+  const { data } = await nextServer.get<FetchedNotesResponse>('/notes', {
+    params: { perPage: 9, page, search, ...(tag && { tag }) },
+    headers: { Cookie: cookieStore.toString() },
+  });
+  return data;
 };
 
+export const fetchNoteById = async (id: string): Promise<Note> => {
+  const cookieStore = await cookies();
+  const { data } = await nextServer.get<Note>(`/notes/${id}`, {
+    headers: { Cookie: cookieStore.toString() },
+  });
+  return data;
+};
 
-export const checkServerSession = async (): Promise<User | null> => {
-  try {
-    const client = await createServerClient();
-    const response = await client.get('/auth/session');
-    return response.data;
-  } catch (error) {
-    return null;
-  }
+export const getMe = async () => {
+  const cookieStore = await cookies();
+  const { data } = await nextServer.get<User>('/users/me', {
+    headers: { Cookie: cookieStore.toString() },
+  });
+  return data;
 };

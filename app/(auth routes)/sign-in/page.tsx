@@ -1,77 +1,71 @@
-use client';
+'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { loginUser } from '@/lib/api/clientApi';
+import { login } from '@/lib/api/clientApi';
+import { Credentials } from '@/types/user';
 import { useAuthStore } from '@/lib/store/authStore';
-import css from './SignIn.module.css';
+import { ApiError } from 'next/dist/server/api-utils';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import css from './SignInPage.module.css';
 
-export default function SignIn() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { setUser } = useAuthStore();
+const SignInPage = () => {
   const router = useRouter();
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
+  const setUser = useAuthStore(state => state.setUser);
 
+  const handleSubmit = async (formData: FormData) => {
     try {
-      // Викликаємо API входу
-      const user = await loginUser({ email, password });
-      setUser(user);
-      // Після успішного входу перенаправляємо на профіль
-      router.push('/profile');
-    } catch (error: any) {
-      // Обробляємо помилки
-      setError(error.response?.data?.message || 'Помилка входу');
-    } finally {
-      setIsLoading(false);
+      const values = Object.fromEntries(formData) as unknown as Credentials;
+      const user = await login(values);
+      if (user) {
+        setUser(user);
+        router.push('/profile');
+      }
+    } catch (error) {
+      setError((error as ApiError).message ?? 'Something went wrong.');
     }
   };
 
   return (
-    <main className={css.mainContent}>
-      <form className={css.form} onSubmit={handleSubmit}>
-        <h1 className={css.formTitle}>Sign in</h1>
+    <>
+      <main className={css.mainContent}>
+        <form className={css.form} action={handleSubmit}>
+          <h1 className={css.formTitle}>Sign in</h1>
 
-        <div className={css.formGroup}>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            name="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={css.input}
-            required
-          />
-        </div>
+          <div className={css.formGroup}>
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              name="email"
+              className={css.input}
+              required
+            />
+          </div>
 
-        <div className={css.formGroup}>
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            name="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={css.input}
-            required
-          />
-        </div>
+          <div className={css.formGroup}>
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              name="password"
+              className={css.input}
+              required
+            />
+          </div>
 
-        <div className={css.actions}>
-          <button type="submit" disabled={isLoading} className={css.submitButton}>
-            {isLoading ? 'Вхід...' : 'Log in'}
-          </button>
-        </div>
+          <div className={css.actions}>
+            <button type="submit" className={css.submitButton}>
+              Log in
+            </button>
+          </div>
 
-        {error && <p className={css.error}>{error}</p>}
-      </form>
-    </main>
+          {error && <p className={css.error}>{error}</p>}
+        </form>
+      </main>
+    </>
   );
-}
+};
+
+export default SignInPage;

@@ -1,57 +1,53 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/lib/store/authStore';
-import { updateUser } from '@/lib/api/clientApi';
 import Image from 'next/image';
-import css from './EditProfile.module.css';
+import css from './EditProfilePage.module.css';
+import { getMe, updateMe } from '@/lib/api/clientApi';
+import { useAuthStore } from '@/lib/store/authStore';
+import { User } from '@/types/user';
+import Loader from '@/components/Loader/Loader';
 
-export default function EditProfile() {
-  const { user, setUser } = useAuthStore();
-  const [username, setUsername] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+const EditProfilePage = () => {
   const router = useRouter();
+  const { setUser: setGlobalUser } = useAuthStore();
 
- 
+  const [user, setUser] = useState<User | null>(null);
+  const [username, setUsername] = useState('');
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    if (user) {
-      setUsername(user.username || '');
-    }
-  }, [user]);
+    const fetchUser = async () => {
+      try {
+        const data = await getMe();
+        setUser(data);
+        setUsername(data.username);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
+    if (!username.trim()) return;
 
     try {
-    
-      const updatedUser = await updateUser({ username });
-      setUser(updatedUser);
-      
+      const updated = await updateMe(username.trim());
+      setUser(updated);
+      setGlobalUser(updated);
       router.push('/profile');
-    } catch (error: any) {
-      setError(error.response?.data?.message || 'Помилка оновлення');
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      console.error('An attempt to update the username failed:', error);
     }
   };
 
-  const handleCancel = () => {
-    router.push('/profile');
-  };
+  const handleCancel = () => router.push('/profile');
 
-  if (!user) {
-    return (
-      <main className={css.mainContent}>
-        <div className={css.profileCard}>
-          <h1 className={css.formTitle}>Завантаження...</h1>
-        </div>
-      </main>
-    );
-  }
+  if (loading || !user) return <Loader />;
 
   return (
     <main className={css.mainContent}>
@@ -59,7 +55,7 @@ export default function EditProfile() {
         <h1 className={css.formTitle}>Edit Profile</h1>
 
         <Image
-          src={user.avatar || '/note.svg'}
+          src={user.avatar || '/default-avatar.png'}
           alt="User Avatar"
           width={120}
           height={120}
@@ -72,26 +68,30 @@ export default function EditProfile() {
             <input
               id="username"
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
               className={css.input}
+              value={username}
+              onChange={e => setUsername(e.target.value)}
             />
           </div>
 
           <p>Email: {user.email}</p>
 
           <div className={css.actions}>
-            <button type="submit" disabled={isLoading} className={css.saveButton}>
-              {isLoading ? 'Збереження...' : 'Save'}
+            <button type="submit" className={css.saveButton}>
+              Save
             </button>
-            <button type="button" onClick={handleCancel} className={css.cancelButton}>
+            <button
+              type="button"
+              className={css.cancelButton}
+              onClick={handleCancel}
+            >
               Cancel
             </button>
           </div>
-
-          {error && <p className={css.error}>{error}</p>}
         </form>
       </div>
     </main>
   );
-}
+};
+
+export default EditProfilePage;

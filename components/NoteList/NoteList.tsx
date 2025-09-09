@@ -1,8 +1,8 @@
 import css from './NoteList.module.css';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteNote } from '../../lib/api';
+import { deleteNote } from '@/lib/api/clientApi';
 import type { Note } from '../../types/note';
-import {  RiDeleteBin5Fill} from 'react-icons/ri';
+import {  RiDeleteBin5Fill } from 'react-icons/ri';
 import Link from 'next/link';
 
 interface NoteListProps {

@@ -1,10 +1,12 @@
-import css from '../../../../components/Loader/Loader.module.css';
+import { BounceLoader } from 'react-spinners';
+import css from './Loader.module.css';
 
-export default function Loader() {
+const Loader = () => {
   return (
-    <div className={css.loaderContainer}>
-      <div className={css.spinner}></div>
-      <p className={css.loadingText}>Loading...</p>
+    <div className={css.loaderBackdrop}>
+      <BounceLoader color="#0d6efd" />
     </div>
   );
-}
+};
+
+export default Loader;

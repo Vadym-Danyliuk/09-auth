@@ -1,1 +1,1 @@
-# 09-auth
+An application for storing, creating, deleting and searching notes.

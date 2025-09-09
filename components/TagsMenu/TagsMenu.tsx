@@ -1,49 +1,38 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useState } from 'react';
 import css from './TagsMenu.module.css';
+import Link from 'next/link';
+import { FaChevronCircleDown, FaChevronCircleUp } from 'react-icons/fa';
 
-const TAGS = ['All', 'Work', 'Personal', 'Meeting', 'Shopping', 'Todo'];
+const tagList: string[] = [
+  'All notes',
+  'Todo',
+  'Work',
+  'Personal',
+  'Meeting',
+  'Shopping',
+];
 
-export default function TagsMenu() {
+const TagsMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (!target.closest('.menuContainer')) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
-
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+  const toggle = () => setIsOpen(!isOpen);
 
   return (
-    <div className={`${css.menuContainer} menuContainer`}>
-      <button 
-        className={css.menuButton}
-        onClick={toggleMenu}
-        aria-expanded={isOpen}
-      >
-        Категорії ▾
+    <div className={css.menuContainer}>
+      <button onClick={toggle} className={css.menuButton}>
+        Notes {isOpen ? <FaChevronCircleUp /> : <FaChevronCircleDown />}
       </button>
       {isOpen && (
         <ul className={css.menuList}>
-          {TAGS.map((tag) => (
-            <li key={tag} className={css.menuItem}>
-              <Link 
-                href={`/notes/filter/${tag}`} 
+          {tagList.map(item => (
+            <li className={css.menuItem} key={item}>
+              <Link
+                onClick={toggle}
+                href={`/notes/filter/${item}`}
                 className={css.menuLink}
-                onClick={() => setIsOpen(false)}
               >
-                {tag === 'All' ? 'All notes' : tag}
+                {item}
               </Link>
             </li>
           ))}
@@ -51,4 +40,6 @@ export default function TagsMenu() {
       )}
     </div>
   );
-}
+};
+
+export default TagsMenu;

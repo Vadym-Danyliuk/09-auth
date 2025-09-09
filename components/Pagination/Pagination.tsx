@@ -1,6 +1,5 @@
 import ReactPaginate from 'react-paginate';
 import css from './Pagination.module.css';
-
 import { RiSkipBackFill, RiSkipForwardFill } from 'react-icons/ri';
 
 interface PaginationProps {
@@ -20,7 +19,7 @@ const Pagination = ({ totalPages, onChange, page }: PaginationProps) => {
       onPageChange={({ selected }) => onChange(selected + 1)}
       forcePage={page - 1}
       renderOnZeroPageCount={null}
-      nextLabel={<RiSkipForwardFill />}
+  nextLabel={<RiSkipForwardFill />}
       previousLabel={<RiSkipBackFill />}
     />
   );

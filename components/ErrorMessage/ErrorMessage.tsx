@@ -1,14 +1,8 @@
 import css from './ErrorMessage.module.css';
 
-interface ErrorMessageProps {
-  message: string;
-}
+const ErrorMessage = () => {
+  return <p className={css.text}>Завантаженя, зачекайте
+  </p>;
+};
 
-export default function ErrorMessage({ message }: ErrorMessageProps) {
-  return (
-    <div className={css.errorContainer}>
-      <div className={css.errorIcon}>⚠️</div>
-      <p className={css.errorMessage}>{message}</p>
-    </div>
-  );
-}
+export default ErrorMessage;

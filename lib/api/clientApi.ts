@@ -1,52 +1,70 @@
+import { Credentials, User } from '@/types/user';
+import { nextServer } from './api';
+import { NewNote, Note } from '@/types/note';
 
-import { apiClient } from './api';
-import type { User } from '@/types/user';
-
-
-interface LoginCredentials {
-  email: string;
-  password: string;
+interface SessionStatus {
+  success: boolean;
 }
 
-interface RegisterCredentials {
-  email: string;
-  password: string;
+interface FetchedNotesResponse {
+  notes: Note[];
+  totalPages: number;
 }
 
-
-export const loginUser = async (credentials: LoginCredentials): Promise<User> => {
-  const response = await apiClient.post('/auth/login', credentials);
-  return response.data;
+export const register = async (credentials: Credentials) => {
+  const { data } = await nextServer.post<User>('/auth/register', credentials);
+  return data;
 };
 
+export const login = async (credentials: Credentials) => {
+  const { data } = await nextServer.post<User>('/auth/login', credentials);
 
-export const registerUser = async (credentials: RegisterCredentials): Promise<User> => {
-  const response = await apiClient.post('/auth/register', credentials);
-  return response.data;
+  return data;
 };
 
-
-export const logoutUser = async (): Promise<void> => {
-  await apiClient.post('/auth/logout');
+export const logout = async () => {
+  await nextServer.post<User>('/auth/logout');
 };
 
-
-export const checkSession = async (): Promise<User | null> => {
-  try {
-    const response = await apiClient.get('/auth/session');
-    return response.data;
-  } catch (error) {
-    return null;
-  }
+export const checkSession = async () => {
+  const { data } = await nextServer.get<SessionStatus>('/auth/session');
+  return data.success;
 };
 
-
-export const getCurrentUser = async (): Promise<User> => {
-  const response = await apiClient.get('/users/me');
-  return response.data;
+export const getMe = async () => {
+  const { data } = await nextServer.get<User>('/users/me');
+  return data;
 };
 
-export const updateUser = async (userData: Partial<User>): Promise<User> => {
-  const response = await apiClient.patch('/users/me', userData);
-  return response.data;
+export const updateMe = async (username: string): Promise<User> => {
+  const { data } = await nextServer.patch<User>('/users/me', {
+    username,
+  });
+  return data;
+};
+
+export const fetchNotes = async (
+  page: number,
+  search: string,
+  tag: string
+): Promise<FetchedNotesResponse> => {
+  const { data } = await nextServer.get<FetchedNotesResponse>('/notes', {
+    params: { perPage: 9, page, search, ...(tag && { tag }) },
+  });
+  return data;
+};
+
+export const fetchNoteById = async (id: string): Promise<Note> => {
+  const { data } = await nextServer.get<Note>(`/notes/${id}`);
+  return data;
+};
+
+export const createNote = async (newNote: NewNote): Promise<Note> => {
+  const { data } = await nextServer.post<Note>('/notes', newNote);
+  return data;
+};
+
+export const deleteNote = async (id: string): Promise<Note> => {
+  const { data } = await nextServer.delete<Note>(`/notes/${id}`);
+  return data;
 };
